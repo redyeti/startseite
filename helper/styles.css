@@ -1,0 +1,62 @@
+table {
+	width: 100%;
+}
+
+#outerContent {
+	position: relative;
+	left: 50%;
+	width: 50%;
+}
+
+#content {
+	padding: 30px;
+	background: url("bg3.png");
+	width: 800px;
+	position: relative;
+	left: -400px;
+	border-right: 1px black solid;
+	border-left: 1px black solid;
+	height: 100%;
+	box-sizing: padding-box;
+	-moz-box-sizing: padding-box;
+	/* box-shadow:8px 8px 8px #666; */
+}
+
+#innerContent {
+	border: 1px black solid;
+	background-color: white;
+	height: 100%;
+	padding: 5px;
+	padding-left: 30px;
+	box-sizing: padding-box;
+	-moz-box-sizing: padding-box;
+	box-shadow:8px 8px 8px #666;
+}
+
+body {
+	padding: 0px;
+	margin: 0px;
+	background-color: #ddd;
+}
+
+h1 {
+	font-family: Arial, sans-serif;
+	color: #999;
+}
+
+a, a:active, a:visited {
+	color: black;
+}
+
+.entryDate {
+	color: #71bdc3;
+}
+
+.entryModule {
+	font-size: 80%;
+	color: #7588ac;
+}
+
+.entryLocation {
+	color: #999;
+}

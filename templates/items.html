@@ -1,0 +1,17 @@
+@require(entries)
+@for entry in entries:
+<tr>
+	<td class="entryDate">@entry['date']!t</td>
+	<td class="entryName">
+		@if entry['link']:
+		<a href="@entry['link']!h" target="_blank">@entry.name!h</a>
+		@else:
+			@entry['name']!h
+		@end
+
+	</td>
+	<td class="entryLocation">@entry['location']!h</td>
+	<td class="entryModule">@entry['source']!h</td>
+	<td class="entryTools">[X][T]</td>
+</tr>
+@end
