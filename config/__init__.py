@@ -1,4 +1,5 @@
 from sources import *
+from nds import NDS
 
 DATABASE = "db.sqlite"
 
@@ -8,7 +9,7 @@ SOURCES = dict(
 
 def prioritize(date, name, location, source, link):
 
-	if source == "dota" and location not in ("Hannover","Bremen","Hamburg"):
+	if source == "dota" and location not in NDS+["Bremen","Hamburg"]:
 		return None
 
 	# default
