@@ -5,9 +5,12 @@ from wheezy.template.engine import Engine
 from wheezy.template.ext.core import CoreExtension
 from wheezy.template.loader import FileLoader
 
-from database import Database
+# --- dependency inhection
+import database
+import config
+from classManager import ClassManager, ManagedMeta
 
-searchpath = [os.path.dirname(__file__)+'/templates']
+searchpath = [os.path.join(os.path.dirname(__file__),'themes',ClassManager.Config.THEME,'templates')]
 engine = Engine(
     loader=FileLoader(searchpath),
     extensions=[CoreExtension()]
@@ -34,6 +37,7 @@ engine.global_vars.update({
 	'h': lambda x: escape(str(x)),
 	'j': json.dumps,
 	't': formatTime,
+	'f': lambda x: str(float(x))
 })
 
 class Entry(object):
@@ -44,8 +48,10 @@ class Entry(object):
 		return ""
 
 class AjaxManager(object):
-	def __init__(self,db):
-		self.db = Database(db)
+	__metaclass__ = ManagedMeta
+
+	def __init__(self,db, prio):
+		self.db = self._CM.Database(db, prio)
 
 	def getPath(self):
 		return os.path.dirname(__file__)
@@ -63,5 +69,15 @@ class AjaxManager(object):
 
 
 	def __getItems(self):
+		if self.command != "GET":
+			return ""
+
 		data = dict(entries=self.db.getCurrentItems())
 		return self.template("items", **data)
+
+	def __hideItem(self):
+		if self.command != "POST" or 'id' not in self.postvars:
+			return ""
+
+		self.db.hideItem(int(self.postvars['id'][0]))
+		

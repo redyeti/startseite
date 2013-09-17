@@ -1,0 +1,77 @@
+
+div#bg_b {
+	width: 100%;
+	height: 461px;
+	position: absolute;
+	bottom: 0px;
+	right: 1040px;
+	background-image: url('bg_b.jpg');
+	background-repeat: no-repeat;
+	background-position: right bottom;
+	z-index: -1;
+}
+
+div#bg_br {
+	width: 1040px;
+	height: 461px;
+	position: absolute;
+	bottom: 0px;
+	right: 0px;
+	background-image: url('bg_br.jpg');
+	background-repeat: no-repeat;
+	background-position: right bottom;
+	z-index: -1;
+}
+
+h1 {
+	color: #282828;
+	font-family: Arial, sans-serif;
+	text-shadow: 5px 5px 10px #ccc;
+}
+
+div#main {
+	margin-right: 100px;
+}
+
+table, th, td {
+	border: 1px #282828 solid;
+	border-collapse: collapse;
+	padding: 3px;
+	padding-left: 5px;
+	padding-right: 5px;
+	background-color: rgba(255,255,255,0.6);
+}
+
+table {
+	box-shadow: 5px 5px 10px #ccc;
+	max-width: 100%;
+}
+
+
+a, a:active, a:visited {
+	color: black;
+}
+
+td.entryDate {
+	font-size: 80%;
+	vertical-align: bottom;
+}
+
+td.entryModule {
+	font-size: 80%;
+	vertical-align: bottom;
+	font-style: italic;
+}
+
+td.entryName {
+	background-color: rgba(221,221,221,0.6);
+}
+
+td.entryLocation {
+	font-size: 80%;
+	vertical-align: bottom;
+}
+
+.hideButton {
+	cursor: pointer;
+}

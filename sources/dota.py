@@ -1,29 +1,30 @@
 from source import *
 import urllib2
+from lxml import etree
 
 class Dota(Source):
-	def update(self, name):
-		u = urllib2.urlopen("http://www.kleingeldprinzessin.de/dota/pages_de_de/startseite/startseite/events.txt")
-		lines = iter([x.strip() for x in u.read().split("\n")])
-		
-		assert(lines.next() == "eventstext=")
-		try:
-			while True:
-				date = lines.next()
+	def update(self):
 
-				if not date:
-					continue
+		url = "http://www.kleingeldprinzessin.de"
+		u = urllib2.urlopen(url)
+		doc = etree.HTML(u.read())
 
-				date = parseDate(date, ["%d.%m.%Y", "%d.%m.%Y um %H:%M h"])
-				text = lines.next()
-				
-				t = text.replace(">","|").replace("<","|").split("|")
-				itemtext = "Dota " + t[0][:-4]
-				location = t[2]
+		tour = doc.xpath(".//h2[./text()='Tourdaten']")[0]
+		dateElements = tour.getparent().findall("h4")
+	
+		for dateElement in dateElements:
+			date = dateElement.text
+			text = etree.tostring(dateElement.getnext(), method="text", encoding=unicode)
+			textparts = text.split(",")
+			if len(textparts) <= 1:
+				continue
+			date = parseDate(date, ["%d.%m.%Y", "%d.%m.%Y um %H:%M h"])
+			location = textparts[0].capitalize().strip()
+			text = "Dota in %s (%s)" % (location, textparts[1].strip())
+			yield InsertEntry(date, text, location, url)
 
-				yield InsertEntry(date, itemtext, location, None)
-				if lines.next() != "":
-					raise ValueError("Expected empty line.")
+		yield CleanOldEntries()
 
-		except StopIteration:
-			return
+if __name__ == "__main__":
+	import database, config
+	print list(Dota(None, 0, 0).update())

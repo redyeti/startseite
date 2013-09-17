@@ -1,10 +1,16 @@
 import abc
 from collections import namedtuple
 import time
+from classManager import ManagedABCMeta
 
-__all__ = ("InsertEntry", "parseDate", "Source")
+__all__ = ("InsertEntry", "parseDate", "Source", "CleanOldEntries")
 
+# an entry to insert into the database
 InsertEntry = namedtuple("Entry","date name location link")
+
+# clean old entries from previous updates no longer in the list
+class CleanOldEntries(object):
+	__slots__ = []
 
 def parseDate(s, formats):
 	s = s.strip()
@@ -16,16 +22,31 @@ def parseDate(s, formats):
 	raise ValueError("No matching time format found: %s, %s" % (repr(s), repr(formats)))
 
 class Source(object):
-	__metaclass__ = abc.ABCMeta
+	__metaclass__ = ManagedABCMeta
 
 	@abc.abstractmethod
 	def update(self):
 		pass
 
+	sources = {}
 
-	def __init__(self, t_update, t_keep):
+	def __init__(self, name, t_update, t_keep):
 		self.__t_update = self.__parseTime(t_update)
 		self.__t_keep = self.__parseTime(t_keep)
+		self.__name = name
+
+		if not hasattr(self, "database"):
+			Source.database = self._CM.Database(
+				self._CM.Config.DATABASE_FILE,
+				self._CM.Config.prioritize
+			)
+
+		self.registry = self.database.getRegister(name)
+		self.sources[name] = self
+
+	@property
+	def name(self):
+		return self.__name
 
 	@property
 	def t_update(self):

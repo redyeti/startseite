@@ -1,18 +1,22 @@
 #!/usr/bin/env python
 from BaseHTTPServer import  BaseHTTPRequestHandler, HTTPServer
 from ajaxManager import AjaxManager
+import cgi
 from pprint import pprint
 import os, sys
 import config
+import database
 
 class Handler(AjaxManager, BaseHTTPRequestHandler):
 
 	def __init__(self, *args, **params):
-		AjaxManager.__init__(self, config.DATABASE)
+		AjaxManager.__init__(self,
+			self._CM.Config.DATABASE_FILE,
+			self._CM.Config.prioritize
+		)
 		BaseHTTPRequestHandler.__init__(self, *args, **params)
 
 	def do_GET(self, *args, **params):
-		#print "GET:", self.path
 
 		if self.path == "/":
 			self.__do_default()
@@ -21,6 +25,24 @@ class Handler(AjaxManager, BaseHTTPRequestHandler):
 		namespaces = self.path.split("/",2)
 		if hasattr(self, "_Handler__do_"+namespaces[1]):
 			getattr(self, "_Handler__do_"+namespaces[1])(namespaces[2])
+			return
+
+		self.__do_error(400)
+
+	def do_POST(self, *args, **params):
+
+		ctype, pdict = cgi.parse_header(self.headers.getheader('content-type'))
+		if ctype == 'multipart/form-data':
+			self.postvars = cgi.parse_multipart(self.rfile, pdict)
+		elif ctype == 'application/x-www-form-urlencoded':
+			length = int(self.headers.getheader('content-length'))
+			self.postvars = cgi.parse_qs(self.rfile.read(length), keep_blank_values=1)
+		else:
+			self.postvars = {}
+
+		namespaces = self.path.split("/",2)
+		if namespaces[1] == "ajax":
+			self.__do_ajax(namespaces[2])
 			return
 
 		self.__do_error(400)
@@ -37,7 +59,7 @@ class Handler(AjaxManager, BaseHTTPRequestHandler):
 		self.wfile.write(data)
 
 	def __do_helper(self, request):
-		path = os.path.join(self.getPath(), "helper", request)
+		path = os.path.join(self.getPath(), "themes", self._CM.Config.THEME, "helper", request)
 		if os.path.isfile(path):
 			try:
 				with open(path) as f:
