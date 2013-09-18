@@ -37,7 +37,8 @@ engine.global_vars.update({
 	'h': lambda x: escape(str(x)),
 	'j': json.dumps,
 	't': formatTime,
-	'f': lambda x: str(float(x))
+	'f': lambda x: str(float(x)),
+	'i': lambda x: str(int(x)),
 })
 
 class Entry(object):
@@ -51,7 +52,7 @@ class AjaxManager(object):
 	__metaclass__ = ManagedMeta
 
 	def __init__(self,db, prio):
-		self.db = self._CM.Database(db, prio)
+		self.db = self._CM.Config.db
 
 	def getPath(self):
 		return os.path.dirname(__file__)
@@ -72,7 +73,11 @@ class AjaxManager(object):
 		if self.command != "GET":
 			return ""
 
-		data = dict(entries=self.db.getCurrentItems())
+		registry = self.db.getGlobalView()
+		data = dict(
+			entries = self.db.getCurrentItems(),
+			lag = time.time() - registry.get("workerTimestamp",0),
+		)
 		return self.template("items", **data)
 
 	def __hideItem(self):

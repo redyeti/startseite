@@ -20,11 +20,9 @@ ClassManager.Config()
 class Worker(object):
 	__metaclass__ = ManagedMeta
 
-	def __init__(self):
-		self.db = self._CM.Database(
-			self._CM.Config.DATABASE_FILE,
-			self._CM.Config.prioritize
-		)
+	@property
+	def db(self):
+		return self._CM.Config.db
 
 	def initialize(self):
 		self.db.setSources(self._CM.Source.sources.keys())
@@ -45,6 +43,9 @@ class Worker(object):
 			self.db.updateSource(name, updatetime)
 			self.db.commit()
 			print "done. (%i Elements)" % counter
+
+		registry = self.db.getGlobalView()
+		registry["workerTimestamp"] = updatetime
 
 def runWorker():
 	w = Worker()

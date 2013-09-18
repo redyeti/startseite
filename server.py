@@ -4,8 +4,12 @@ from ajaxManager import AjaxManager
 import cgi
 from pprint import pprint
 import os, sys
+
 import config
 import database
+from sources import *
+from classManager import ManagedMeta, ClassManager
+ClassManager.Config()
 
 class Handler(AjaxManager, BaseHTTPRequestHandler):
 
@@ -26,6 +30,8 @@ class Handler(AjaxManager, BaseHTTPRequestHandler):
 		if hasattr(self, "_Handler__do_"+namespaces[1]):
 			getattr(self, "_Handler__do_"+namespaces[1])(namespaces[2])
 			return
+
+		print self.headers
 
 		self.__do_error(400)
 

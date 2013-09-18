@@ -1,22 +1,41 @@
 @require(entries)
-@for entry in entries:
-<tr data-eid="@entry['id']!h" data-priority="@entry['priority']!f"> 
-	<td class="entryDate">@entry['date']!t</td>
-	<td class="entryName">
-		@if entry['link']:
-		<a href="@entry['link']!h" target="_blank">@entry['name']!h</a>
-		@else:
-			@entry['name']!h
-		@end
+@require(lag)
+<div>
+	<table id="data">
+		@for entry in entries:
+		<tr data-eid="@entry['id']!h" data-priority="@entry['priority']!f"> 
+			<td class="entryDate">@entry['date']!t</td>
+			<td class="entryName">
+				@if entry['link']:
+				<a href="@entry['link']!h" target="_blank">@entry['name']!h</a>
+				@else:
+					@entry['name']!h
+				@end
 
-	</td>
-	<td class="entryLocation">
-		@if entry['location'] is not None:
-			@entry['location']!h
-		@else:
-			–
-		@end</td>
-	<td class="entryModule">@entry['source']!h</td>
-	<td class="entryTools"><div class="hideButton">×</div></td>
-</tr>
-@end
+			</td>
+			<td class="entryLocation">
+				@if entry['location'] is not None:
+					@entry['location']!h
+				@else:
+					–
+				@end</td>
+			<td class="entryModule">@entry['source']!h</td>
+			<td class="entryTools">
+				<span class="markButton"><!--
+					@if entry['marked']:
+						-->☆<!--
+					@else:
+						-->★<!--
+					@end
+				--></span>
+				<span class="hideButton">×</span>
+			</td>
+		</tr>
+		@end
+	</table>
+	<div id="lag" \
+		@if lag > 100:
+			class="error" \
+		@end
+		>Letztes Update des Workers vor @lag!i Sekunden.</div>
+</div>

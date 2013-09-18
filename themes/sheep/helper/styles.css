@@ -72,6 +72,20 @@ td.entryLocation {
 	vertical-align: bottom;
 }
 
+td.entryTools {
+	white-space: nowrap;
+}
+
 .hideButton {
 	cursor: pointer;
+}
+
+#lag {
+	margin-top: 5px;
+	font-size: 60%;
+}
+
+.error {
+	font-weight: bold;
+	color: red;
 }
