@@ -91,7 +91,7 @@ class Handler(AjaxManager, BaseHTTPRequestHandler):
 			raise
 
 def runServer():
-	server_address = ('', 8023)
+	server_address = ('127.0.0.1', 8023)
 	httpd = HTTPServer(server_address, Handler)
 	while True:
 		httpd.handle_request()
