@@ -180,3 +180,7 @@ class Database(object):
 	def commit(self):
 		pass
 		#self._conn.commit()
+
+	def rollback(self):
+		pass
+		#self._conn.rollback()
