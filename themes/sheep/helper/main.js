@@ -45,4 +45,17 @@ function hideElement (ev) {
 	$.post("ajax/hideItem", {id: $(ev.target).closest("tr").data("eid")}, update);
 }
 
+function markElement (ev) {
+	var $tr = $(ev.target).closest("tr")
+	$.post("ajax/markItem", {id: $tr.data("eid")}, update);
+	$tr.data("eid",-1); //invalidate
+}
+function unmarkElement (ev) {
+	var $tr = $(ev.target).closest("tr")
+	$.post("ajax/unmarkItem", {id: $tr.data("eid")}, update);
+	$tr.data("eid",-1); //invalidate
+}
+
 $("body").on("click", ".hideButton", hideElement);
+$("body").on("click", ".markButton", markElement);
+$("body").on("click", ".unmarkButton", unmarkElement);

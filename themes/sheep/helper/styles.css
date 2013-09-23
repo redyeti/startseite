@@ -48,8 +48,18 @@ table {
 }
 
 
-a, a:active, a:visited {
+a {
 	color: black;
+	text-decoration: none;
+}
+
+a:visited {
+	color: #555;
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
 }
 
 td.entryDate {
@@ -76,7 +86,7 @@ td.entryTools {
 	white-space: nowrap;
 }
 
-.hideButton {
+.hideButton, .markButton, .unmarkButton {
 	cursor: pointer;
 }
 

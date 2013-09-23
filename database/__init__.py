@@ -24,10 +24,11 @@ KeepNone = KeepNone()
 class Database(object):
 	__metaclass__ = ManagedMeta
 
-	def __init__(self, filename, prio):
+	def __init__(self, filename):
 		self._conn = sqlite3.connect(filename)
 		self._conn.row_factory = sqlite3.Row
-		self._conn.create_function("PRIORITIZE", 5, prio)
+		self._conn.create_function("PRIORITIZE", 6, self._CM.Config.prioritize)
+		self._conn.create_function("COLORIZE", 6, self._CM.Config.colorize)
 		self._conn.isolation_level = None
 		c = self._conn.cursor()
 		self.initTables()
@@ -45,6 +46,7 @@ class Database(object):
 					link text,
 					update_time float NOT NULL,
 					hidden bool NOT NULL,
+					marked bool NOT NULL,
 					CONSTRAINT constr_it UNIQUE (date, name, source))
 				""")
 			self._conn.execute("""
@@ -77,13 +79,16 @@ class Database(object):
 		c = self._conn.cursor()
 		now = time.time()
 		c.execute("""
-			SELECT *, PRIORITIZE(date, name, location, source, link) AS priority
+			SELECT
+				*,
+				PRIORITIZE(date, name, location, source, link, marked) AS priority,
+				COLORIZE(date, name, location, source, link, marked) AS color
 			FROM items
 			JOIN sources USING(source)
 			WHERE hidden = 0
 			AND ? < hide_time + date
-			AND PRIORITIZE(date, name, location, source, link) IS NOT NULL
-			ORDER BY PRIORITIZE(date, name, location, source, link) ASC
+			AND PRIORITIZE(date, name, location, source, link, marked) IS NOT NULL
+			ORDER BY PRIORITIZE(date, name, location, source, link, marked) ASC
 			LIMIT 15
 			""", [now])
 		for row in c:
@@ -94,7 +99,7 @@ class Database(object):
 			c = self._conn.cursor()
 			c.execute("""
 				INSERT OR IGNORE INTO items
-				(date, name, location, source, link, update_time, hidden) VALUES (?,?,?,?,?,?,0)
+				(date, name, location, source, link, update_time, hidden, marked) VALUES (?,?,?,?,?,?,0,0)
 				""", [float(item.date), KeepNone[unicode](item.name), KeepNone[unicode](item.location), source, KeepNone[unicode](item.link), time])
 			if c.rowcount <= 1:
 				c.execute("""
@@ -105,6 +110,17 @@ class Database(object):
 		with self._conn:
 			self._conn.execute("""
 				UPDATE items SET hidden = 1 WHERE id = ?
+				""", [int(item)])
+		
+	def unmarkItem(self, item):
+		with self._conn:
+			self._conn.execute("""
+				UPDATE items SET marked = 1 WHERE id = ?
+				""", [int(item)])
+	def markItem(self, item):
+		with self._conn:
+			self._conn.execute("""
+				UPDATE items SET marked = 0 WHERE id = ?
 				""", [int(item)])
 
 	def setSources(self, sources):
@@ -140,6 +156,9 @@ class Database(object):
 			UPDATE sources SET last_update = ? WHERE source = ?
 			""", [time, name])
 		self._conn.commit()
+
+	def invalidateSource(self, name):
+		self.updateSource(name, 0)
 		
 	def getLastUpdate(self):
 		c = self._conn.cursor()

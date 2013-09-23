@@ -3,35 +3,46 @@ from __future__ import unicode_literals
 from nds import NDS
 from classManager import ManagedMeta
 from dateHelpers import *
-import re, datetime
+import re, datetime, time
 
 class Config(object):
 	__metaclass__ = ManagedMeta
 
 	@staticmethod
-	def prioritize(date, name, location, source, link):
+	def colorize(date, name, location, source, link, marked):
+		if source == "1t":
+			return "blue"
+		return None
+
+	@staticmethod
+	def prioritize(date, name, location, source, link, marked):
 		"""
 		Measure interestingness of the entries. Lowering the score makes entries more interresting.
 		"""
 
+		prio = date - time.time()
+		
 		if source == "Dota":
 			if location not in NDS+["Bremen","Hamburg"]:
 				return None
 			elif location == "Hannover":
-				return date - parseDuration("2 months")
+				prio -= parseDuration("2 months")
 
 		if source == "Prinz":
 			if location in ["Forum","Kamp"]:
 				return None
 
+		if marked:
+			prio = (prio - parseDuration("1 day")) / 2
+
 		# default
-		return date
+		return prio
 
 	DATABASE_FILE = "db.sqlite"
 
 	def __init__(self):
 		globals().update(self._CM)
-		type(self).db = self._CM.Database(self.DATABASE_FILE, self.prioritize)
+		type(self).db = self._CM.Database(self.DATABASE_FILE)
 
 		#Diff(
 		#	name = "KP",

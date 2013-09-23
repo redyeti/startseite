@@ -83,6 +83,15 @@ class AjaxManager(object):
 	def __hideItem(self):
 		if self.command != "POST" or 'id' not in self.postvars:
 			return ""
-
 		self.db.hideItem(int(self.postvars['id'][0]))
+		
+	def __markItem(self):
+		if self.command != "POST" or 'id' not in self.postvars:
+			return ""
+		self.db.markItem(int(self.postvars['id'][0]))
+		
+	def __unmarkItem(self):
+		if self.command != "POST" or 'id' not in self.postvars:
+			return ""
+		self.db.unmarkItem(int(self.postvars['id'][0]))
 		

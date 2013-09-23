@@ -4,6 +4,7 @@ from ajaxManager import AjaxManager
 import cgi
 from pprint import pprint
 import os, sys
+import optparse
 
 import config
 import database
@@ -95,5 +96,15 @@ def runServer():
 	while True:
 		httpd.handle_request()
 
+#def createOptionGroup(parser):
+#	ogr = optparse.OptionGroup(parser, "Server Options")
+#	return ogr
+
 if __name__ == "__main__":
+	#parser = optparse.OptionParser()
+	#createOptionGroup(parser)
+	#(options, args) = parser.parse_args()
+
+	#assert(not args)
+	#runServer(**options)
 	runServer()

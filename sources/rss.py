@@ -26,7 +26,9 @@ class RSS(Source):
 	def update(self):
 
 		u = urllib2.urlopen(self.__url)
-		doc = etree.XML(u.read())
+		print self.__url
+		parser = etree.XMLParser(recover=True)
+		doc = etree.XML(u.read(), parser)
 
 		items = doc.findall(".//item")
 	

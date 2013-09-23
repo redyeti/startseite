@@ -5,7 +5,11 @@
 		@for entry in entries:
 		<tr data-eid="@entry['id']!h" data-priority="@entry['priority']!f"> 
 			<td class="entryDate">@entry['date']!t</td>
-			<td class="entryName">
+			<td class="entryName"
+			@if entry['color']:
+				style="box-shadow: 50px 0px 50px -50px @entry['color']!h inset;"
+			@end
+			>
 				@if entry['link']:
 				<a href="@entry['link']!h" target="_blank">@entry['name']!h</a>
 				@else:
@@ -21,13 +25,11 @@
 				@end</td>
 			<td class="entryModule">@entry['source']!h</td>
 			<td class="entryTools">
-				<span class="markButton"><!--
-					@if entry['marked']:
-						-->☆<!--
-					@else:
-						-->★<!--
-					@end
-				--></span>
+				@if entry['marked']:
+					<span class="markButton">★</span>
+				@else:
+					<span class="unmarkButton">☆</span>
+				@end
 				<span class="hideButton">×</span>
 			</td>
 		</tr>
