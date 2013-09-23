@@ -38,7 +38,7 @@ class Config(object):
 		# default
 		return prio
 
-	DATABASE_FILE = "db.sqlite"
+	DATABASE_FILE = "/opt/startseite/data/db.sqlite"
 
 	def __init__(self):
 		globals().update(self._CM)
