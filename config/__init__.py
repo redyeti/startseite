@@ -22,7 +22,7 @@ class Config(object):
 
 		prio = date - time.time()
 		
-		if source == "Dota":
+		if source in ("Dota", "Mk I", "Mk II"):
 			if location not in NDS+["Bremen","Hamburg"]:
 				return None
 			elif location == "Hannover":
@@ -38,7 +38,7 @@ class Config(object):
 		# default
 		return prio
 
-	DATABASE_FILE = "/opt/startseite/data/db.sqlite"
+	DATABASE_FILE = "db.sqlite"
 
 	def __init__(self):
 		globals().update(self._CM)
@@ -65,9 +65,9 @@ class Config(object):
 		RSS(
 			name = "Prinz",
 			url = "http://hannover.prinz.de/termine/veranstaltungen?search=&primetime=&location_id=&sort=date&main_cat_id=1&hide_form=0&cat_id[0]=1&cat_id[1]=100&cat_id[2]=1214065&cat_id[3]=1214067&cat_id[4]=1214069&cat_id[5]=1291239&date_from=%s&date_to=%s&feed=rss" % (today, t_week),
-			title = re.compile(r"^(.*\))"),
-			date = re.compile(r"- (.*)$"),
-			location = re.compile(r"\)(.*)-"),
+			x_title = r"xfn:search('^(.*\)).*', {}, 0)",
+			x_date = r"xfn:search('- (.*)$', string(./title), 0)",
+			x_location = r"xfn:search('\)(.*)-', string(./title), 0)",
 			t_keep = 0,
 			t_update = "1 d",
 		)
@@ -81,6 +81,30 @@ class Config(object):
 			t_keep = "1 d",
 			t_update = "1 h",
 		)
+
+		Atom(
+			name = "xkcd",
+			url = "http://what-if.xkcd.com/feed.atom",
+			t_keep = "8 d",
+			t_update = "1 d",
+		)
+
+
+		today = datetime.date.today()
+		t_year = today.strftime("%Y")
+		t_nextyear = str(int(t_year)+1)
+		for y, n in ((t_year, "I"), (t_nextyear, "II")):
+			HTMLFeed(
+				name = "Mk "+n,
+				url = "http://www.marktkalendarium.de/maerkte%s.php" % y,
+				x_items = ".//table[@border=1]//tr[position()>1][not(./td[@colspan])]",
+				x_date = "string(./td[1])",
+				x_title = "string(./td[3])",
+				x_location = r"xfn:search('.-[0-9]+\s(.*)', string(./td[4]), 0)",
+				x_link = r"./td[6]//a/@href",
+				t_keep = 0,
+				t_update = "100 d",
+			)
 
 
 	THEME="sheep"

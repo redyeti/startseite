@@ -1,47 +1,46 @@
 from source import *
 import urllib2
-from lxml import etree
-import re
 import dateHelpers
 
-def tt(node):
-	if node is None:
-		return None
-	else:
-		return node.text
-
-ReType = type(re.compile(""))
-
-class FeedBaseException(Exception):
-	pass
+from classManager import ManagedABCMeta
+from abc import abstractmethod
 
 class FeedBase(Source):
+	__metaclass__ = ManagedABCMeta
+
 	def __init__(self, url, title=None, date=None, location=None, grep=None, delete=False, n_keep=None, user_agent=None, **params):
 		Source.__init__(self, **params)
 		self.__url = url
-		self.__title = title
-		self.__date = date
-		self.__location = location
 		self.__grep = grep
 		self.__delete = delete
 		self.__n_keep = n_keep
 		self.__user_agent = user_agent
 
+	@abstractmethod
 	def findDate(self, item):
-		raise FeedBaseException("findDate not implemented")
+		pass
 
+	@abstractmethod
 	def findItems(self, doc):
-		raise FeedBaseException("findItems not implemented")
+		pass
 
+	@abstractmethod
 	def findLink(self, item):
-		raise FeedBaseException("findLink not implemented")
+		pass
 
+	@abstractmethod
 	def findTitle(self, item):
-		raise FeedBaseException("findTitle not implemented")
+		pass
+
+	@abstractmethod
+	def findLocation(self, item):
+		pass
+
+	@abstractmethod
+	def generateDocument(self, text):
+		pass
 
 	def update(self):
-
-		print self.__url
 		try:
 			if self.__user_agent is None:
 				req = self.__url
@@ -52,36 +51,22 @@ class FeedBase(Source):
 			print e
 			return
 
-		parser = etree.XMLParser(recover=True)
-		doc = etree.XML(u.read(), parser)
+		doc = self.generateDocument(u.read())
 
 		items = self.findItems(doc)
 	
 		n = 0
 
 		for item in items:
-			titletext = tt(self.findTitle(item))
-			link = tt(self.findLink(item))
 			
-			if self.__title is None:
-				text = titletext
-			elif isinstance(self.__title, ReType):
-				text = self.__title.search(titletext).groups()[0]
-			else:
-				text = self.__title
-
-			if self.__date is None:
-				date = dateHelpers.fuzzyParseDate(tt(self.findDate(item)))
-			else:
-				date = dateHelpers.fuzzyParseDate(self.__date.search(titletext).groups()[0])
-
-			if isinstance(self.__location, ReType):
-				location = self.__location.search(titletext).groups()[0]
-			else:
-				location = self.__location
+			text = self.findTitle(item)
+			date = dateHelpers.fuzzyParseDate(self.findDate(item))
+			location = self.findLocation(item)
+			link = self.findLink(item)
 
 			text = text.strip()
 			location = None if location is None else location.strip()
+			lnk = None if link is None else link.strip()
 
 			if (
 				self.__grep is None or

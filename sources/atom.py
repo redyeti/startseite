@@ -1,20 +1,24 @@
-from feedbase import FeedBase
+from xmlFeed import XMLFeed
 
-class Atom(FeedBase):
-	def findDate(self, item):
-		return item.find("./{http://www.w3.org/2005/Atom}updated")
+class Atom(XMLFeed):
+	NAMESPACES = {
+		"atom": "http://www.w3.org/2005/Atom",
+	}
 
-	def findItems(self, doc):
-		return doc.findall(".//{http://www.w3.org/2005/Atom}entry")
+	def __init__(self, x_date="{}", x_items="{}", x_link="{}", x_title="{}", x_location="{}", **params):
+		XMLFeed.__init__(
+			self, 
+			x_items = x_items.format("./atom:entry"),
+			x_title = x_title.format("string(./atom:title)"),
+			x_link = x_link.format("string(./atom:id)"),
+			x_date = x_date.format("string(./atom:updated)"),
+			x_location = x_location.format("null"),
+			**params)
 
-	def findLink(self, item):
-		return item.find("./{http://www.w3.org/2005/Atom}id")
-
-	def findTitle(self, item):
-		return item.find("./{http://www.w3.org/2005/Atom}title")
 
 if __name__ == "__main__":
-	import database, config
+	import database, config, sources
+	config.Config()
 	print list(Atom(
 		name = None,
 		url = "http://what-if.xkcd.com/feed.atom",
