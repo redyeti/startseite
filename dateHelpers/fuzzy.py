@@ -3,20 +3,20 @@ import datetime, time, re
 import dateutil.parser
 
 weekdayRe = [
-	"mo(ntag)?|mon(day)?",
-	"di(enstag)?|tue(sday)?",
-	"mi(ttwoch)?|wed(nesday)?",
-	"do(nnerstag)?|thu(rstay)?",
-	"fr(eitag)?|fri(day)?",
-	"sa(mstag)?|sat(urday)?",
-	"so(nntag)?|su(nday)?",
+	"MO(NTAG)?|MON(DAY)?",
+	"DI(ENSTAG)?|TUE(SDAY)?",
+	"MI(TTWOCH)?|WED(NESDAY)?",
+	"DO(NNERSTAG)?|THU(RSTAY)?",
+	"FR(EITAG)?|FRI(DAY)?",
+	"SA(MSTAG)?|SAT(URDAY)?",
+	"SO(NNTAG)?|SU(NDAY)?",
 ]
 weekdayRe = [re.compile(r"\b(%s)\b" % x) for x in weekdayRe]
 
 offsetRe = [
-	u"heute|today",
-	u"morgen|tomorrow",
-	u"übermorgen"
+	U"HEUTE|TODAY",
+	U"MORGEN|TOMORROW",
+	U"ÜBERMORGEN"
 ]
 offsetRe = [re.compile(r"\b(%s)\b" % x) for x in offsetRe]
 
@@ -30,20 +30,20 @@ dateparts = [
 
 connectors = [
 	" ",
-	" um ",
+	" UM ",
 ]
 
 timeparts = [
 	"%H:%M",
-	"%H:%M uhr",
-	"%H uhr",
+	"%H:%M UHR",
+	"%H UHR",
 	"%H:%M:%S",
-	"%H uhr %M",
+	"%H UHR %M",
 	"%H:%M:%S %Z",
 ]
 
 substitutes = [
-	(r"([0-9]+)-[0-9]+ uhr", r"\2 uhr"),
+	(r"([0-9]+)-[0-9]+ UHR", r"\2 UHR"),
 ]
 substitutes = [(re.compile(r"\b(%s)\b" % x[0]),x[1]) for x in substitutes]
 

@@ -12,23 +12,24 @@ def parseDate(s, formats):
 			return time.mktime(time.strptime(s, f))
 		except ValueError:
 			pass #Sic!
-	raise ValueError("No matching time format found: %s, %s" % (repr(s), repr(formats)))
+	raise ValueError("parseDate: No matching time format found: %s, %s" % (repr(s), repr(formats)))
 
 def fuzztime(s):
+	s = s.strip()
 	try:
 		return parseDate(s, dtformats)
 	except ValueError:
 		try:
 			return time.mktime(dateutil.parser.parse(s).timetuple())
 		except ValueError:
-			raise ValueError("Could not parse date %s" % repr(s))
+			raise ValueError("fuzztime: Could not parse time %s" % repr(s))
 
 
 def fuzzyParseDate(s):
 
 	# substitute expressions
 
-	s = s.lower()
+	s = s.upper()
 	for reg, rep in substitutes:
 		s = reg.sub(rep, s)
 	
@@ -58,7 +59,7 @@ def parseDuration(time):
 	
 	time = time.split()
 	if len(time) != 2:
-		raise ValueError("Time string must consist of a number and a unit separated by whitespace")
+		raise ValueError("parseDuration: Time string must consist of a number and a unit separated by whitespace")
 
 	value, unit = time
 	value = float(value)
@@ -80,4 +81,4 @@ def parseDurationParts(value, unit):
 	elif unit in set(("year","years","y","a")):
 		return parseDurationParts(value*365, "d")
 	else:
-		raise ValueError("Invalid unit: "+unit)
+		raise ValueError("parseDurationParts: Invalid unit: "+unit)
