@@ -6,7 +6,7 @@ div#bg_b {
 	bottom: 0px;
 	right: 1040px;
 	background-image: url('bg_b.jpg');
-	background-repeat: no-repeat;
+	background-repeat: repeat-x;
 	background-position: right bottom;
 	z-index: -1;
 }
