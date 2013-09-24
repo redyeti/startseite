@@ -15,21 +15,30 @@ function update() {
 		var oldrows = $('#table tr');
 		var newrows = $('<table>'+data+'</table>').find('tr');
 
+		// update lag display
 		$("#lag").replaceWith($(data).find("#lag"));
 
 		while (1) {
+			// if there are no new rows left -> remove all old rows
 			if (newrows.length == 0) {
 				oldrows.fadeOut(400, function(){ $(this).remove()});
+				if (oldrows.length > 0) window.flashTitle("Updated!");
 				return;
+			// if there are no new rows left -> add them to the displayed table
 			} else if (oldrows.length == 0){
 				newrows.hide().appendTo("#table").fadeIn();
 				return;
+			// if the two rows are the same -> ignore both
 			} else if ($(oldrows[0]).data("eid") == $(newrows[0]).data("eid")) {
 				oldrows.shift();
 				newrows.shift();
+			// if the priority of the old row is lower -> remove old row
 			} else if ($(oldrows[0]).data("priority") <= $(newrows[0]).data("priority")) {
+				window.flashTitle("Updated!");
 				$(oldrows.shift()).fadeOut(400, function(){ $(this).remove()});
+			// otherwise log rows and insert new rows before old rows ?!?
 			} else {
+				window.flashTitle("Updated!");
 				console.log(oldrows, newrows, $(oldrows[0]));
 				$(oldrows[0]).before(newrows.shift());
 			}	
@@ -56,6 +65,12 @@ function unmarkElement (ev) {
 	$tr.data("eid",-1); //invalidate
 }
 
+function mouseMove() {
+	window.cancelFlashTitle();
+}
+
 $("body").on("click", ".hideButton", hideElement);
 $("body").on("click", ".markButton", markElement);
 $("body").on("click", ".unmarkButton", unmarkElement);
+$("body").on("mousemove", mouseMove);
+
