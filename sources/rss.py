@@ -13,7 +13,7 @@ def tt(node):
 ReType = type(re.compile(""))
 
 class RSS(Source):
-	def __init__(self, url, title=None, date=None, location=None, grep=None, delete=False, n_keep=None, **params):
+	def __init__(self, url, title=None, date=None, location=None, grep=None, delete=False, n_keep=None, user_agent=None, **params):
 		Source.__init__(self, **params)
 		self.__url = url
 		self.__title = title
@@ -22,11 +22,20 @@ class RSS(Source):
 		self.__grep = grep
 		self.__delete = delete
 		self.__n_keep = n_keep
+		self.__user_agent = user_agent
 
 	def update(self):
 
-		u = urllib2.urlopen(self.__url)
 		print self.__url
+		try:
+			if self.__user_agent is None:
+				req = self.__url
+			else:
+				req = urllib2.Request(self.__url, None, { 'User-Agent': self.__user_agent })
+			u = urllib2.urlopen(req)
+		except urllib2.HTTPError, e:
+			print e
+			return
 		parser = etree.XMLParser(recover=True)
 		doc = etree.XML(u.read(), parser)
 
