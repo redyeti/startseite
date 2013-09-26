@@ -23,8 +23,8 @@ class Source(object):
 	sources = {}
 
 	def __init__(self, name, t_update, t_keep):
-		self.__t_update = parseDuration(t_update)
-		self.__t_keep = parseDuration(t_keep)
+		self.__t_update = None if t_update is None else parseDuration(t_update)
+		self.__t_keep = None if t_keep is None else parseDuration(t_keep)
 		self.__name = name
 
 		self.registry = self.database.getRegistryView(name)
@@ -49,3 +49,6 @@ class Source(object):
 	def __hash__(self):
 		return hash((self.__class__.__name__, self.name))
 
+	@property
+	def name(self):
+		return self.__name
