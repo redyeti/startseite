@@ -3,7 +3,8 @@ from __future__ import unicode_literals
 from nds import NDS
 from classManager import ManagedMeta
 from dateHelpers import *
-import re, datetime, time
+import re, datetime, time, os
+from scope import scope
 
 class Config(object):
 	__metaclass__ = ManagedMeta
@@ -22,7 +23,7 @@ class Config(object):
 
 		prio = date - time.time()
 		
-		if source in ("Dota", "Mk I", "Mk II"):
+		if source in ("Dota", "Mk I", "Mk II","Mk"):
 			if location not in NDS+["Bremen","Hamburg"]:
 				return None
 			elif location == "Hannover":
@@ -38,11 +39,13 @@ class Config(object):
 		# default
 		return prio
 
-	DATABASE_FILE = "db.sqlite"
+	DATABASE_FILE = os.path.dirname(__file__)+"/../db.sqlite"
 
 	def __init__(self):
 		globals().update(self._CM)
 		type(self).db = self._CM.Database(self.DATABASE_FILE)
+
+		today = datetime.date.today()
 
 		#Diff(
 		#	name = "KP",
@@ -57,20 +60,21 @@ class Config(object):
 			 t_keep=0
 		)
 
-		today = datetime.date.today()
-		t_week = today + datetime.timedelta(7)
-		today = today.strftime("%d.%m.%Y")
-		t_week = t_week.strftime("%d.%m.%Y")
+		@scope
+		def _():
+			t_week = today + datetime.timedelta(7)
+			t_today = today.strftime("%d.%m.%Y")
+			t_week = t_week.strftime("%d.%m.%Y")
 
-		RSS(
-			name = "Prinz",
-			url = "http://hannover.prinz.de/termine/veranstaltungen?search=&primetime=&location_id=&sort=date&main_cat_id=1&hide_form=0&cat_id[0]=1&cat_id[1]=100&cat_id[2]=1214065&cat_id[3]=1214067&cat_id[4]=1214069&cat_id[5]=1291239&date_from=%s&date_to=%s&feed=rss" % (today, t_week),
-			x_title = r"xfn:search('^(.*\)).*', {}, 0)",
-			x_date = r"xfn:search('- (.*)$', string(./title), 0)",
-			x_location = r"xfn:search('\)(.*)-', string(./title), 0)",
-			t_keep = 0,
-			t_update = "1 d",
-		)
+			RSS(
+				name = "Prinz",
+				url = "http://hannover.prinz.de/termine/veranstaltungen?search=&primetime=&location_id=&sort=date&main_cat_id=1&hide_form=0&cat_id[0]=1&cat_id[1]=100&cat_id[2]=1214065&cat_id[3]=1214067&cat_id[4]=1214069&cat_id[5]=1291239&date_from=%s&date_to=%s&feed=rss" % (t_today, t_week),
+				x_title = r"xfn:search('^(.*\)).*', {}, 0)",
+				x_date = r"xfn:search('- (.*)$', string(./title), 0)",
+				x_location = r"xfn:search('\)(.*)-', string(./title), 0)",
+				t_keep = 0,
+				t_update = "1 d",
+			)
 
 		RSS(
 			name = "1t",
@@ -90,21 +94,26 @@ class Config(object):
 		)
 
 
-		today = datetime.date.today()
-		t_year = today.strftime("%Y")
-		t_nextyear = str(int(t_year)+1)
-		for y, n in ((t_year, "I"), (t_nextyear, "II")):
-			HTMLFeed(
-				name = "Mk "+n,
-				url = "http://www.marktkalendarium.de/maerkte%s.php" % y,
-				x_items = ".//table[@border=1]//tr[position()>1][not(./td[@colspan])]",
-				x_date = "string(./td[1])",
-				x_title = "string(./td[3])",
-				x_location = r"xfn:search('.-[0-9]+\s(.*)', string(./td[4]), 0)",
-				x_link = r"./td[6]//a/@href",
+
+		@scope
+		def _():
+			t_year = today.strftime("%Y")
+			t_nextyear = str(int(t_year)+1)
+			mk = Union(
+				name = "Mk",
 				t_keep = 0,
 				t_update = "100 d",
 			)
+			for y in (t_year, t_nextyear):
+				mk.add(
+					HTMLFeed,
+					url = "http://www.marktkalendarium.de/maerkte%s.php" % y,
+					x_items = ".//table[@border=1]//tr[position()>1][not(./td[@colspan])]",
+					x_date = "string(./td[1])",
+					x_title = "string(./td[3])",
+					x_location = r"xfn:search('.-[0-9]+\s(.*)', string(./td[4]), 0)",
+					x_link = r"./td[6]//a/@href",
+				)
 
 
 	THEME="sheep"

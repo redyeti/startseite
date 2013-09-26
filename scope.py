@@ -1,0 +1,2 @@
+def scope(fn):
+	fn()
