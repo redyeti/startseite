@@ -3,6 +3,7 @@
 import time, sys
 import urllib2
 import optparse
+import traceback
 
 # --- dependency injection ---
 import database
@@ -48,19 +49,14 @@ class Worker(object):
 				elif isinstance(item, source.CleanOldEntries):
 					self.db.cleanOldEntries(name, updatetime)
 				else:
-					raise TypeError("Invalid item type.")
+					raise TypeError("Invalid item type: %s" % type(item))
 			self.db.updateSource(name, updatetime)
 			self.db.commit()
 			print "done. (%i Elements)" % counter
-		except urllib2.URLError as e: 
-			if e.reason == r'[Errno 2] No such file or directory':
-				print "no connection."
-				self.db.rollback()
-			else:
-				raise
 		except: #sic!
+			traceback.print_exc()
 			self.db.rollback()
-			raise #FIXME: prevent the server from crashing if a plugin is bad-scripted
+			#FIXME: notify the user on failed updates
 
 def runWorker():
 	w = Worker()
