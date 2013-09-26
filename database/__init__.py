@@ -53,7 +53,7 @@ class Database(object):
 				CREATE TABLE IF NOT EXISTS sources (
 					source text NOT NULL UNIQUE,
 					last_update float NOT NULL DEFAULT 0,
-					update_interval float NOT NULL,
+					update_interval float,
 					hide_time float NOT NULL)
 				""")
 			self._conn.execute("""
@@ -96,15 +96,12 @@ class Database(object):
 
 	def addItem(self, time, source, item):
 		with self._conn:
-			c = self._conn.cursor()
-			c.execute("""
-				INSERT OR IGNORE INTO items
-				(date, name, location, source, link, update_time, hidden, marked) VALUES (?,?,?,?,?,?,0,0)
-				""", [float(item.date), KeepNone[unicode](item.name), KeepNone[unicode](item.location), source, KeepNone[unicode](item.link), time])
-			if c.rowcount <= 1:
-				c.execute("""
-					UPDATE items SET location = ?, link = ?, update_time = ? WHERE date = ? AND name = ? AND source = ?
-					""", [KeepNone[unicode](item.location), KeepNone[unicode](item.link), time, float(item.date), KeepNone[unicode](item.name), source])
+			self.upsert(
+				"items",
+				dict(date=float(item.date), name=KeepNone[unicode](item.name), source=source),
+				dict(location=KeepNone[unicode](item.location), link=KeepNone[unicode](item.link), update_time=time, hidden=0, marked=0),
+				dict(location=KeepNone[unicode](item.location), link=KeepNone[unicode](item.link), update_time=time)
+			)
 		
 	def hideItem(self, item):
 		with self._conn:
@@ -123,24 +120,48 @@ class Database(object):
 				UPDATE items SET marked = 0 WHERE id = ?
 				""", [int(item)])
 
+	def debugSources(self):
+		c = self._conn.cursor()
+		c.execute("""
+			SELECT *
+			FROM sources
+			""")
+		for row in c:
+			print "Source", row
+
+
+	def debugSelect(self, name):
+		c = self._conn.cursor()
+		c.execute("""
+			SELECT * FROM sources WHERE source=?
+		""", [name])
+		for row in c:
+			print "Sel", row
+
+	def upsert(self, table, keys, insert, update):
+		c = self._conn.cursor()
+
+		ik, iv = zip(*(keys.items()+insert.items()))
+		insertString = "INSERT INTO `%s` (%s) VALUES (%s)" % (table, ",".join(ik), ",".join(["?"]*len(iv)))
+		try:
+			# insert
+			c.execute(insertString, list(iv))
+		except sqlite3.IntegrityError:
+			# update instead
+			updateString = "UPDATE `%s` SET %s WHERE %s" % (table, ", ".join([x+" = ?" for x in update.keys()]), " AND ".join([x+" = ?" for x in keys.keys()]))
+			c.execute(updateString, list(update.values()+keys.values()))
+
 	def setSources(self, sources):
 		with self._conn:
 			c = self._conn.cursor()
 			for name, source in self._CM.Source.sources.iteritems():
-				c.execute("""
-					INSERT OR IGNORE INTO sources (source, last_update, update_interval, hide_time) VALUES (?,0,?,?)
-				""", [name, source.t_update, source.t_keep])
+				self.upsert(
+					"sources",
+					dict(source=name),
+					dict(last_update=0, update_interval=source.t_update, hide_time=source.t_keep),
+					dict(update_interval=source.t_update, hide_time=source.t_keep),
+				)
 
-				if c.rowcount <= 1:
-					c.execute("""
-						UPDATE sources SET update_interval=?, hide_time=? WHERE source=?
-					""", [source.t_update, source.t_keep, name])
-					
-
-			n = ",".join(["?"]*len(sources))
-			c.execute("""
-				DELETE FROM sources WHERE source NOT IN (""" + n + """)
-			""", list(sources))
 
 	def cleanOldEntries(self, source, updateTime):
 		c = self._conn.cursor()
@@ -178,9 +199,9 @@ class Database(object):
 			yield (row[0], self._CM.Source.sources[row[0]])
 
 	def commit(self):
-		pass
-		#self._conn.commit()
+		self._conn.commit()
+		#pass
 
 	def rollback(self):
-		pass
-		#self._conn.rollback()
+		self._conn.rollback()
+		#pass
