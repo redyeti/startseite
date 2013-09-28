@@ -65,6 +65,7 @@ a:hover {
 td.entryDate {
 	font-size: 80%;
 	vertical-align: bottom;
+	white-space: nowrap;
 }
 
 td.entryModule {
