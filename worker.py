@@ -2,7 +2,6 @@
 
 import time, sys
 import urllib2
-import optparse
 import traceback
 
 # --- dependency injection ---
@@ -54,30 +53,41 @@ class Worker(object):
 			self.db.commit()
 			print "done. (%i Elements)" % counter
 		except: #sic!
+			raise
 			traceback.print_exc()
 			self.db.rollback()
 			#FIXME: notify the user on failed updates
 
-def runWorker():
+def _run(w):
+	print "Checking for updates ..."
+	w.update()
+	print "Up to date."
+
+def runWorker(once):
 	w = Worker()
 	w.initialize()
 
-	while True:
-		print "Checking for updates ..."
-		w.update()
-		print "Up to date."
-		print
-		time.sleep(10)
-
-#def createOptionGroup(parser):
-#	ogr = optparse.OptionGroup(parser, "Worker Options")
-#	return ogr
+	if once:
+		_run(w)
+	else:
+		while True:
+			_run(w)
+			print
+			time.sleep(10)
 
 if __name__ == "__main__":
-	#parser = optparse.OptionParser()
-	#createOptionGroup(parser)
-	#(options, args) = parser.parse_args()
+	import argparse
 
-	#assert(not args)
-	#runWorker(**options)
-	runWorker()
+	parser = argparse.ArgumentParser(description='Run the worker module')
+	parser.add_argument('-i','--invalidate', dest='invalidate', action='append', metavar="NAME", default=[],
+			   help='Invalidate the source NAME')
+	parser.add_argument('-x','--once', dest='once', action='store_true', default=False,
+			   help='Run only once')
+
+	args = parser.parse_args()
+
+	for i in args.invalidate:
+		ClassManager.Config.db.invalidateSource(i)
+
+	runWorker(args.once)
+
