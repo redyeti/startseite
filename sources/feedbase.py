@@ -4,6 +4,9 @@ import dateHelpers
 
 from classManager import ManagedABCMeta
 from abc import abstractmethod
+import re
+
+ReType = type(re.compile(""))
 
 class FeedBase(Source):
 	__metaclass__ = ManagedABCMeta

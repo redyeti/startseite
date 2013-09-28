@@ -23,6 +23,7 @@ class Source(object):
 	sources = {}
 
 	def __init__(self, name, t_update, t_keep):
+		print "Creating source", name
 		self.__t_update = None if t_update is None else parseDuration(t_update)
 		self.__t_keep = None if t_keep is None else parseDuration(t_keep)
 		self.__name = name

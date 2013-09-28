@@ -1,21 +1,7 @@
-from feedbase import FeedBase
+from ..feedbase import FeedBase
 from lxml import etree
 from abc import abstractproperty
-import re
-
-xfn = etree.FunctionNamespace("https://github.com/redyeti/startseite/xml/xfn-function-space")
-xfn.prefix = "xfn"
-
-def xfnSearch(context, pattern, string, group):
-	res = re.search(pattern, string)
-	if res:
-		return res.groups()[int(group)]
-	else:
-		return None
-xfn["search"] = xfnSearch
-
-xfn["none"] = lambda x: None
-xfn["null"] = lambda x: None
+from xfnExtensions import xfn
 
 class XMLFeed(FeedBase):
 	PARSER = etree.XMLParser
