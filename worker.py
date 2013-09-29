@@ -26,8 +26,10 @@ class Worker(object):
 	def db(self):
 		return self._CM.Config.db
 
-	def initialize(self):
+	def __init__(self, nofail=True):
 		self.db.setSources(self._CM.Source.sources.keys())
+		self.__nofail = nofail
+
 	def update(self):
 		updatetime = time.time()
 		for name, src in self.db.getOutOfDateSources():
@@ -53,41 +55,24 @@ class Worker(object):
 			self.db.commit()
 			print "done. (%i Elements)" % counter
 		except: #sic!
-			raise
-			traceback.print_exc()
-			self.db.rollback()
-			#FIXME: notify the user on failed updates
+			if self.__nofail:
+				traceback.print_exc()
+				self.db.rollback()
+			else:
+				raise
 
-def _run(w):
-	print "Checking for updates ..."
-	w.update()
-	print "Up to date."
+	def runOnce(self):
+		print "Checking for updates ..."
+		self.update()
+		print "Up to date."
 
-def runWorker(once):
-	w = Worker()
-	w.initialize()
-
-	if once:
-		_run(w)
-	else:
+	def run(self):
 		while True:
-			_run(w)
+			self.runOnce()
 			print
 			time.sleep(10)
+		
 
 if __name__ == "__main__":
-	import argparse
-
-	parser = argparse.ArgumentParser(description='Run the worker module')
-	parser.add_argument('-i','--invalidate', dest='invalidate', action='append', metavar="NAME", default=[],
-			   help='Invalidate the source NAME')
-	parser.add_argument('-x','--once', dest='once', action='store_true', default=False,
-			   help='Run only once')
-
-	args = parser.parse_args()
-
-	for i in args.invalidate:
-		ClassManager.Config.db.invalidateSource(i)
-
-	runWorker(args.once)
+	Worker().run()
 
