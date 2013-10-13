@@ -10,6 +10,9 @@ import worker
 from sources import *
 from classManager import ManagedMeta, ClassManager
 ClassManager.Config()
+ClassManager.Config.db.setSources(ClassManager.Source.sources.keys())
+
+print "SOURCEKEYS", ClassManager.Source.sources.keys()
 
 parser = argparse.ArgumentParser(description='Infoserver commandline tool. Note that all commands are processed in commandline order.')
 

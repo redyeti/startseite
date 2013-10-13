@@ -161,6 +161,10 @@ class Database(object):
 					dict(last_update=0, update_interval=source.t_update, hide_time=source.t_keep),
 					dict(update_interval=source.t_update, hide_time=source.t_keep),
 				)
+			c.execute("""
+				DELETE FROM sources
+				WHERE source NOT IN (""" + ",".join(len(sources)*["?"]) + """)""",
+				sources)
 
 
 	def cleanOldEntries(self, source, updateTime):

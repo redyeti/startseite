@@ -9,10 +9,14 @@ class Diff(Source):
 		Source.__init__(self, **params)
 		self.__url = url
 	def update(self):
-		u = urllib2.urlopen(self.__url)
-		dhash = hash(u.read())
+		dhash = hash(self.fetch())
 		
 		if "hash" not in self.registry or self.registry["hash"] != dhash:
 			self.registry["hash"] = dhash
 			yield InsertEntry(time.time(), "Seite \"%s\" Geändert" % self.name, None, self.__url)	
 			
+
+	def fetch(self):
+		u = urllib2.urlopen(self.__url)
+		return u.read()
+		

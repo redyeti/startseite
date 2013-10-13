@@ -5,6 +5,7 @@ from classManager import ManagedMeta
 from dateHelpers import *
 import re, datetime, time, os
 from scope import scope
+import channels
 
 class Config(object):
 	__metaclass__ = ManagedMeta
@@ -54,6 +55,13 @@ class Config(object):
 		#	url="http://kamelopedia.mormo.org/index.php/Spezial:Letzte_%C3%84nderungen"
 		#)
 
+		Diff(
+			name="ObSForum",
+			t_update = "8 h",
+			t_keep = "24 h",
+			url = "http://blutroten-sandes.forumieren.eu/"
+		)
+
 		Dota(
 			name="Dota",
 			 t_update="1 d",
@@ -70,7 +78,7 @@ class Config(object):
 				name = "Prinz",
 				url = "http://hannover.prinz.de/termine/veranstaltungen?search=&primetime=&location_id=&sort=date&main_cat_id=1&hide_form=0&cat_id[0]=1&cat_id[1]=100&cat_id[2]=1214065&cat_id[3]=1214067&cat_id[4]=1214069&cat_id[5]=1291239&date_from=%s&date_to=%s&feed=rss" % (t_today, t_week),
 				x_title = r"xfn:search('^(.*\)).*', {}, 0)",
-				x_date = r"xfn:search('- (.*)$', string(./title), 0)",
+				x_date = r"xfn:search('.*- (.*)$', string(./title), 0)",
 				x_location = r"xfn:search('\)(.*)-', string(./title), 0)",
 				t_keep = 0,
 				t_update = "1 d",
@@ -87,33 +95,23 @@ class Config(object):
 		)
 
 		Atom(
-			name = "xkcd",
-			url = "http://what-if.xkcd.com/feed.atom",
-			t_keep = "8 d",
-			t_update = "1 d",
+			name = "KP↯",
+			url = "http://kamelopedia.mormo.org/index.php?title=Spezial:Letzte_%C3%84nderungen&feed=atom",
+			grep = "Diskussion:",
+			delete = True,
+			t_keep = "1 d",
+			t_update = "1 h",
+			n_keep = 1,
+		)
+
+		channels.web.blogs.whatif(
+			name = "what-if",
 		)
 
 
-
-		@scope
-		def _():
-			t_year = today.strftime("%Y")
-			t_nextyear = str(int(t_year)+1)
-			mk = Union(
-				name = "Mk",
-				t_keep = 0,
-				t_update = "100 d",
-			)
-			for y in (t_year, t_nextyear):
-				mk.add(
-					HTMLFeed,
-					url = "http://www.marktkalendarium.de/maerkte%s.php" % y,
-					x_items = ".//table[@border=1]//tr[position()>1][not(./td[@colspan])]",
-					x_date = "string(./td[1])",
-					x_title = "string(./td[3])",
-					x_location = r"xfn:search('.-[0-9]+\s(.*)', string(./td[4]), 0)",
-					x_link = r"./td[6]//a/@href",
-				)
+		channels.events.marktkalendarium(
+			name = "Mk",
+		)
 
 
 	THEME="sheep"
